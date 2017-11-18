@@ -1,0 +1,40 @@
+<html lang="en">
+	<head>
+		<title>ESCROW-gator</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<script src="./bower_components/stellar-sdk/stellar-sdk.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script type="text/javascript" src="script.js"></script>
+	</head>
+	<body>
+
+			<div class="form-group">
+				<label for="secretKey_input">Account Creator Secret Key</label>
+				<input type="text" class="form-control" id="source_secret_key" placeholder="Account Creator's Secret Key">
+			</div>
+			<div class="form-group">
+				<label for="startDate_input">Lock Up Start Date</label>
+				<input type="date" class="form-control" id="startDate_input" name="start_date" placeholder="Lock Up Start Date">
+			</div>
+			<div class="form-group">
+				<label for="lockUpLength_input">Length of Lock Up (In Years)</label>
+				<input type="number" class="form-control" id="lockup_length" placeholder="length of lockup">
+			</div>
+			<div class="form-group">
+				<label for="publicKey_input">Their Public Key</label>
+				<input type="text" class="form-control" id="dest_public_key" placeholder="public key">
+			</div>
+			<div class="form-group">
+				<label for="lumenAmount_input">Number of Lumens to Escrow</label>
+				<input type="text" class="form-control" id="lumen_amount" placeholder="Number of Lumens to Escrow">
+			</div>
+			<button class="btn btn-default" onclick="submit()">Submit</button>
+			<br>
+	<p id="status_place"></p>
+	<p id="escrow_id"></p>
+	<p id="escrow_secret"></p>
+	<p id="unlock_tx"></p>
+	<p id="recover_tx"></p>
+	<p id="fund_tx"></p>
+	</body>
+</html>
