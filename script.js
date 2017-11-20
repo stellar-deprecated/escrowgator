@@ -20,6 +20,9 @@ function submit(){
     var unlock_date = new Date(year + $('#lockup_length').val() , month, year);
     var recovery_date = new Date(year + $('#lockup_length').val() +1, month, year);
 
+    var unlock_unix = unlock_date.getTime() / 1000;
+    var recovery_unix = recovery_date.getTime()/1000;
+
     if ($('#lockup_length').val()<0){
         throw new Error('Cannot have a negative lockup length please try again');
     }
@@ -50,15 +53,7 @@ function submit(){
             throw new Error('Destination Account / Public Key Does not Exist');
         });
     })
-    // }).then(function(account){
-    //     escrowAcct = account;
-    //     return server.loadAccount($('#dest_public_key').val()).catch(StellarSdk.NotFoundError, function(error){
-    //         throw new Error('Destination Account / Public Key Does not Exist');
-    //     });
-    // })
     .then(function(account){
-        //destAcct = account;
-        // console.log(destAcct);
         escrowAcct = account;
         console.log(escrowAcct);
         var txn = new StellarSdk.TransactionBuilder(escrowAcct)
@@ -89,10 +84,13 @@ function submit(){
         throw new Error(error);
     })        
     .then(function(){
-        var unlock = new StellarSdk.TransactionBuilder(escrowAcct, {
-            minTime: unlock_date.getTime() / 1000
-        })
-            .addOperation(StellarSdk.Operation.setOptions({ //done on escrow act
+        console.log(unlock_unix);
+        console.log(typeof(unlock_unix));
+        var unlock = new StellarSdk.TransactionBuilder(escrowAcct, {timebounds: {
+            minTime: unlock_unix,
+            maxTime: Number.MAX_SAFE_INTEGER
+        }})
+        .addOperation(StellarSdk.Operation.setOptions({ //done on escrow act
                 signer: {
                     ed25519PublicKey: escrowKeyPair.publicKey(),
                     weight: 0
@@ -103,12 +101,21 @@ function submit(){
                 lowThreshold: 1,
                 medThreshold: 1, // a payment is medium threshold
                 highThreshold: 1 // make sure to have enough weight to add up to the high threshold!
-            }))
-            .build();
+            }));
+        unlock = unlock.build();
         unlock_tx = unlock.toEnvelope().toXDR('base64');
-        var recovery = new StellarSdk.TransactionBuilder(escrowAcct, {
-            minTime: recovery_date.getTime() / 1000
-        })
+
+        escrowAcct.sequence = (parseInt(escrowAcct.sequence)-1).toString();
+        console.log(recovery_unix);
+        console.log(typeof(recovery_unix));
+        var recovery = new StellarSdk.TransactionBuilder(escrowAcct, 
+            {
+                timebounds: {
+                    minTime: recovery_unix,
+                    maxTime: Number.MAX_SAFE_INTEGER
+                }
+            }
+        )
         .addOperation(StellarSdk.Operation.setOptions({
                 signer: {
                     ed25519PublicKey: $('#dest_public_key').val(),
