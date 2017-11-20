@@ -64,6 +64,7 @@ function submit(){
                 }
             }))
             .addOperation(StellarSdk.Operation.setOptions({ //source acct should be escrow
+                inflationDest: 'GDWNY2POLGK65VVKIH5KQSH7VWLKRTQ5M6ADLJAYC2UEHEBEARCZJWWI',
                 masterWeight: 1, // set master key weight
                 lowThreshold: 2,
                 medThreshold: 2, // a payment is medium threshold
@@ -84,8 +85,10 @@ function submit(){
         throw new Error(error);
     })        
     .then(function(){
-        console.log(unlock_unix);
-        console.log(typeof(unlock_unix));
+        var seq = escrowAcct.sequence;
+        var copyAcct = new StellarSdk.Account(escrowKeyPair.publicKey(), escrowAcct.sequence);
+        console.log(escrowAcct.sequence);
+        console.log(copyAcct.sequence);
         var unlock = new StellarSdk.TransactionBuilder(escrowAcct, {timebounds: {
             minTime: unlock_unix,
             maxTime: Number.MAX_SAFE_INTEGER
@@ -101,14 +104,13 @@ function submit(){
                 lowThreshold: 1,
                 medThreshold: 1, // a payment is medium threshold
                 highThreshold: 1 // make sure to have enough weight to add up to the high threshold!
-            }));
-        unlock = unlock.build();
+            }))
+        .build();
         unlock_tx = unlock.toEnvelope().toXDR('base64');
-
-        escrowAcct.sequence = (parseInt(escrowAcct.sequence)-1).toString();
-        console.log(recovery_unix);
-        console.log(typeof(recovery_unix));
-        var recovery = new StellarSdk.TransactionBuilder(escrowAcct, 
+        console.log("after");
+        console.log(escrowAcct.sequence);
+        console.log(copyAcct.sequence);
+        var recovery = new StellarSdk.TransactionBuilder(copyAcct, 
             {
                 timebounds: {
                     minTime: recovery_unix,
