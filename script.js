@@ -91,7 +91,7 @@ function submit(){
         console.log(copyAcct.sequence);
         var unlock = new StellarSdk.TransactionBuilder(escrowAcct, {timebounds: {
             minTime: unlock_unix,
-            maxTime: Number.MAX_SAFE_INTEGER
+            maxTime: 0 //Number.MAX_SAFE_INTEGER
         }})
         .addOperation(StellarSdk.Operation.setOptions({ //done on escrow act
                 signer: {
@@ -114,7 +114,7 @@ function submit(){
             {
                 timebounds: {
                     minTime: recovery_unix,
-                    maxTime: Number.MAX_SAFE_INTEGER
+                    maxTime: 0 //Number.MAX_SAFE_INTEGER
                 }
             }
         )
