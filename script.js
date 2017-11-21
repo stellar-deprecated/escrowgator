@@ -13,15 +13,21 @@ function submit(){
     var recovery_tx;
     var fund_tx;
 
-    var d = new Date();
+    var d = new Date($('#startDate_input').val());
+    console.log(d);
     var year = d.getFullYear();
     var month = d.getMonth();
     var day = d.getDate();
-    var unlock_date = new Date(year + $('#lockup_length').val() , month, year);
-    var recovery_date = new Date(year + $('#lockup_length').val() +1, month, year);
+    console.log(typeof(year));
+    console.log(typeof($('#lockup_length').val()));
+    var unlock_date = new Date(year + parseInt($('#lockup_length').val()) , month, day);
+    var recovery_date = new Date(year + parseInt($('#lockup_length').val())+1, month, day);
 
     var unlock_unix = unlock_date.getTime() / 1000;
     var recovery_unix = recovery_date.getTime()/1000;
+
+    console.log(unlock_unix);
+    console.log(recovery_unix);
 
     if ($('#lockup_length').val()<0){
         throw new Error('Cannot have a negative lockup length please try again');
