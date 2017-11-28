@@ -14,20 +14,14 @@ function submit(){
     var fund_tx;
 
     var d = new Date($('#startDate_input').val());
-    console.log(d);
     var year = d.getFullYear();
     var month = d.getMonth();
     var day = d.getDate();
-    console.log(typeof(year));
-    console.log(typeof($('#lockup_length').val()));
     var unlock_date = new Date(year + parseInt($('#lockup_length').val()) , month, day);
     var recovery_date = new Date(year + parseInt($('#lockup_length').val())+1, month, day);
-
     var unlock_unix = unlock_date.getTime() / 1000;
     var recovery_unix = recovery_date.getTime()/1000;
 
-    console.log(unlock_unix);
-    console.log(recovery_unix);
 
     if ($('#lockup_length').val()<0){
         throw new Error('Cannot have a negative lockup length please try again');
@@ -61,7 +55,6 @@ function submit(){
     })
     .then(function(account){
         escrowAcct = account;
-        console.log(escrowAcct);
         var txn = new StellarSdk.TransactionBuilder(escrowAcct)
             .addOperation(StellarSdk.Operation.setOptions({ //source acct should be escrow acct
                 signer: {
@@ -81,20 +74,17 @@ function submit(){
         return server.submitTransaction(txn);
     })    
     .then(function(result){
-        console.log("SUCCESS added 2 siggys");
+        console.log("SUCCESS: add signer to escrow");
         console.log(result);
 
     })
     .catch(function(error){
-        console.log("ERROR adding 2 siggys");
         console.log(error);
         throw new Error(error);
     })        
     .then(function(){
         var seq = escrowAcct.sequence;
         var copyAcct = new StellarSdk.Account(escrowKeyPair.publicKey(), escrowAcct.sequence);
-        console.log(escrowAcct.sequence);
-        console.log(copyAcct.sequence);
         var unlock = new StellarSdk.TransactionBuilder(escrowAcct, {timebounds: {
             minTime: unlock_unix,
             maxTime: 0 //Number.MAX_SAFE_INTEGER
@@ -112,10 +102,8 @@ function submit(){
                 highThreshold: 1 // make sure to have enough weight to add up to the high threshold!
             }))
         .build();
+        unlock.sign(escrowKeyPair);
         unlock_tx = unlock.toEnvelope().toXDR('base64');
-        console.log("after");
-        console.log(escrowAcct.sequence);
-        console.log(copyAcct.sequence);
         var recovery = new StellarSdk.TransactionBuilder(copyAcct, 
             {
                 timebounds: {
@@ -141,7 +129,7 @@ function submit(){
         return;
     })
     .then(function(){
-        console.log("SUCCESS");
+        console.log("SUCCESS: creating recover and unlock txn");
     })
     .catch(function(error){
         console.log("ERROR!");
@@ -155,7 +143,6 @@ function submit(){
     })
     .then(function(acct_result){
         fundAcct = acct_result;
-        console.log(fundAcct);
         var fund = new StellarSdk.TransactionBuilder(fundAcct)
         .addOperation(StellarSdk.Operation.payment({
                 destination: escrowKeyPair.publicKey(),
@@ -163,12 +150,10 @@ function submit(){
                 asset: StellarSdk.Asset.native()
         }))
         .build();
-        console.log(fund);
         fund_tx = fund.toEnvelope().toXDR('base64');
-        console.log(fund_tx);
     })
     .then(function(){
-        console.log("SUCCESS");
+        console.log("SUCCESS: funding escrow acct");
     })
     .catch(function(error){
         console.log("ERROR!");
